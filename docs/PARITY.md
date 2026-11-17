@@ -40,23 +40,23 @@
 | 26 | `pdf.split` | PDF | PDFOps.split（每頁一檔 → 資料夾「拆分」） | — | PDFKit（同上游） | ⬜ |  |
 | 27 | `pdf.merge` | PDF | PDFOps.merge（PDF 與圖片依拖入順序合併） | — | PDFKit（同上游） | ⬜ | 少於 2 個 PDF 時停用（同上游） |
 | 28 | `pdf.rotate` | PDF | PDFOps.rotate（每頁 +90°） | — | PDFKit（同上游） | ⬜ |  |
-| 29 | `pdf.mono` | PDF | PDFOps.mono（QuartzFilter「Gray Tone」重繪，文字保持向量） | QuartzFilter（macOS 專屬） | **待決定**（見 IOS_PORT_PLAN 風險 R6） | ⬜ | 預計 ⚠️ |
+| 29 | `pdf.mono` | PDF | PDFOps.mono（QuartzFilter「Gray Tone」重繪，文字保持向量） | QuartzFilter（macOS 專屬） | 逐頁以灰階點陣化（設定 150／200／300 dpi，預設 200），保留頁面尺寸與旋轉；加上看不見的文字層：原 PDF 有可抽取文字就用原文字與位置，否則用 pdf.ocr 的 Vision 流程；逐頁串流 | ⬜ | 預計 ⚠️：見第 5 節「pdf.mono」 |
 | 30 | `pdf.ocr` | PDF | PDFOps.ocr（逐頁渲染 + Vision） | NSPasteboard | CGPDF + Vision + UIPasteboard | ⬜ |  |
 | 31 | `pdf.strip` | PDF | Privacy.stripPDF（清作者、軟體、主題、關鍵詞、日期） | — | PDFKit（同上游） | ⬜ |  |
-| 32 | `vid.to.mp4` | 影片 | MediaOps.video（AVAssetExportSession passthrough／HighestQuality；不支援時 ffmpeg libx264 crf 20） | ffmpeg libx264（備援） | AVFoundation；備援 FFmpeg `h264_videotoolbox` | ⬜ | 預計 ⚠️：x264 為 GPL |
-| 33 | `vid.to.mov` | 影片 | 同上，mov | ffmpeg libx264（備援） | AVFoundation；備援 FFmpeg `h264_videotoolbox` | ⬜ | 預計 ⚠️：x264 為 GPL |
+| 32 | `vid.to.mp4` | 影片 | MediaOps.video（AVAssetExportSession passthrough／HighestQuality；不支援時 ffmpeg libx264 crf 20） | ffmpeg libx264（備援） | AVFoundation；備援 FFmpeg `h264_videotoolbox` | ⬜ | 預計 ⚠️：x264 為 GPL。換算規則見第 5 節「libx264 → h264_videotoolbox」 |
+| 33 | `vid.to.mov` | 影片 | 同上，mov | ffmpeg libx264（備援） | AVFoundation；備援 FFmpeg `h264_videotoolbox` | ⬜ | 預計 ⚠️：x264 為 GPL。換算規則見第 5 節「libx264 → h264_videotoolbox」 |
 | 34 | `vid.to.hevc` | 影片 | ffmpeg hevc_videotoolbox -b:v 來源/2（1.2–25 Mbps）；無 ffmpeg → AVAssetExportPresetHEVCHighestQuality | ffmpeg | FFmpeg hevc_videotoolbox（同參數）；備援保留 | ⬜ |  |
 | 35 | `vid.to.webm` | 影片 | ffmpeg libvpx-vp9 -crf 32 -b:v 0 -row-mt 1 -deadline good -cpu-used 4 + libopus 128k | ffmpeg | FFmpeg（同參數） | ⬜ |  |
 | 36 | `vid.to.gif` | 影片 | ffmpeg fps=12、≤540、palettegen max_colors=200 stats_mode=diff、paletteuse bayer、-t 30；無 ffmpeg → nativeGIF 10fps | ffmpeg | FFmpeg（同濾鏡圖）；nativeGIF 備援保留 | ⬜ | 「只取了前 30 秒」沿用 |
 | 37 | `vid.to.mp3` | 影片 | ffmpeg -vn libmp3lame -q:a 2 | ffmpeg | FFmpeg（同參數） | ⬜ |  |
 | 38 | `vid.to.m4a` | 影片 | AVAssetExportPresetAppleM4A；不支援時 ffmpeg aac 192k | — | AVFoundation；備援 FFmpeg | ⬜ |  |
 | 39 | `vid.to.wav` | 影片 | ffmpeg -vn pcm_s16le | ffmpeg | FFmpeg（同參數） | ⬜ |  |
-| 40 | `vid.compress` | 影片 | ffmpeg libx264 faster crf 27 ≤1920 aac 128k；無 ffmpeg → AVAssetExportPreset1280x720；shrinkResult | ffmpeg libx264 | FFmpeg `h264_videotoolbox`（≤1920）；備援 AVFoundation 720P | ⬜ | 預計 ⚠️：x264 為 GPL |
+| 40 | `vid.compress` | 影片 | ffmpeg libx264 faster crf 27 ≤1920 aac 128k；無 ffmpeg → AVAssetExportPreset1280x720；shrinkResult | ffmpeg libx264 | FFmpeg `h264_videotoolbox`（≤1920）；備援 AVFoundation 720P | ⬜ | 預計 ⚠️：x264 為 GPL。換算規則見第 5 節「libx264 → h264_videotoolbox」 |
 | 41 | `vid.mute` | 影片 | ffmpeg -map 0:v -c copy -an；無 ffmpeg → muteNative（AVMutableComposition passthrough .mov） | ffmpeg | FFmpeg（同參數）；備援保留 | ⬜ |  |
-| 42 | `vid.720p` | 影片 | AVAssetExportPreset1280x720；不支援時 ffmpeg scale 1280 + libx264 | ffmpeg libx264（備援） | AVFoundation；備援 FFmpeg `h264_videotoolbox` | ⬜ | 預計 ⚠️（備援路徑） |
+| 42 | `vid.720p` | 影片 | AVAssetExportPreset1280x720；不支援時 ffmpeg scale 1280 + libx264 | ffmpeg libx264（備援） | AVFoundation；備援 FFmpeg `h264_videotoolbox` | ⬜ | 預計 ⚠️（備援路徑；換算規則見第 5 節） |
 | 43 | `vid.cover` | 影片 | AVAssetImageGenerator @ min(1s, 10%) → JPG q0.92；不支援時 ffmpeg -frames:v 1 | — | AVFoundation；備援 FFmpeg | ⬜ |  |
-| 44 | `vid.fast` | 影片 | ffmpeg setpts=0.5*PTS + atempo=2.0 + libx264 crf 20 + aac 160k | ffmpeg libx264 | FFmpeg 同濾鏡 + `h264_videotoolbox` | ⬜ | 預計 ⚠️：x264 為 GPL |
-| 45 | `vid.slow` | 影片 | ffmpeg setpts=2.0*PTS + atempo=0.5 + libx264 | ffmpeg libx264 | FFmpeg 同濾鏡 + `h264_videotoolbox` | ⬜ | 預計 ⚠️：x264 為 GPL |
+| 44 | `vid.fast` | 影片 | ffmpeg setpts=0.5*PTS + atempo=2.0 + libx264 crf 20 + aac 160k | ffmpeg libx264 | FFmpeg 同濾鏡 + `h264_videotoolbox` | ⬜ | 預計 ⚠️：x264 為 GPL。換算規則見第 5 節「libx264 → h264_videotoolbox」 |
+| 45 | `vid.slow` | 影片 | ffmpeg setpts=2.0*PTS + atempo=0.5 + libx264 | ffmpeg libx264 | FFmpeg 同濾鏡 + `h264_videotoolbox` | ⬜ | 預計 ⚠️：x264 為 GPL。換算規則見第 5 節「libx264 → h264_videotoolbox」 |
 | 46 | `vid.strip` | 影片 | Privacy.stripVideo（passthrough、metadata=[]、forSharing；否則 ffmpeg -map_metadata -1 -c copy） | — | AVFoundation；備援 FFmpeg | ⬜ |  |
 | 47 | `aud.to.mp3` | 音訊 | ffmpeg -vn libmp3lame -q:a 2 | ffmpeg | FFmpeg（同參數） | ⬜ |  |
 | 48 | `aud.to.m4a` | 音訊 | afconvert m4af aac 256k；失敗 → ffmpeg aac 256k | afconvert | AVAssetReader/Writer AAC 256k；備援 FFmpeg | ⬜ |  |
@@ -86,7 +86,7 @@
 | 72 | `gen.sha` | 通用 | GenericOps.sha256（CryptoKit 串流 4 MB、複製全值） | NSPasteboard | CryptoKit + UIPasteboard | ⬜ |  |
 | 73 | `gen.name` | 通用 | Engine.run：檔名 → 剪貼簿 | NSPasteboard | UIPasteboard | ⬜ |  |
 
-## 2. 非動作功能（48）
+## 2. 非動作功能（49）
 
 | 功能 | 上游 | iOS 實作 | 狀態 | 備註 |
 |---|---|---|---|---|
@@ -121,6 +121,7 @@
 | 音效開關 | Settings.sound | 設定頁 | ⬜ |  |
 | 背景虛化開關 | Settings.blur | 設定頁 | ⬜ |  |
 | 登入時自動啟動 | SMAppService | 不適用 → 「觸覺回饋」開關 | ⬜ | 預計 ⚠️ |
+| PDF 黑白解析度（150／200／300 dpi，預設 200） | （上游沒有；Quartz 濾鏡保持向量） | 設定頁，供 pdf.mono 使用 | ⬜ | iOS 新增，配合 pdf.mono 的 ⚠️ |
 | 彈藥狀態（ffmpeg ✓ cwebp ✓） | AppDelegate.toolStatus | 設定頁「弹药状态」顯示 FFmpeg / libwebp 版本 | ⬜ | P0 首頁已顯示版本 |
 | 最近轉換（8 筆，點擊在 Finder 顯示） | Recents、選單 | 設定頁／首頁：重開、分享、在「檔案」中顯示（QLThumbnailGenerator 縮圖） | ⬜ | 預計 ⚠️：Finder → 檔案 App |
 | 退出 | 選單「退出格式轮盘」 | iOS 不提供退出 | ⬜ | 預計 ⚠️：平台慣例 |
@@ -162,3 +163,41 @@
 ## 4. ⚠️ 差異總表
 
 （尚無已完成的 ⚠️ 項目；「預計 ⚠️」標在各列備註。）
+
+## 5. 替代方案說明
+
+### libx264 → h264_videotoolbox
+
+x264 是 GPL，不能內建，上游所有 `-c:v libx264 … -crf N` 都改用 `h264_videotoolbox`。VideoToolbox 不支援 CRF，換算規則：
+
+1. **優先用 `-q:v`（固定品質）**。執行時先用 16×16 的 1 幀測試編碼檢查裝置是否接受 `-q:v`，結果快取。
+   換算：`q = round(108 − 2.14 × crf)`，限制在 1…100。上游用到的值：crf 20 → **q:v 65**（vid.to.mp4/mov 備援、vid.720p 備援、vid.fast/slow），crf 27 → **q:v 50**（vid.compress）。
+2. **裝置不接受 `-q:v` 時改用 `-b:v`**，依原片視訊位元率換算：
+   - `目標 = 原片視訊位元率 × 係數 × 輸出像素數 ÷ 原片像素數`；crf 20 係數 0.9，crf 27 係數 0.5。
+   - 讀不到原片位元率時以每像素每幀估算：crf 20 用 0.10 bit，crf 27 用 0.05 bit（× 寬 × 高 × fps）。
+   - 限制在 0.8…25 Mbps，並加 `-maxrate 1.5×目標 -bufsize 2×目標`。
+3. 其他參數照上游（`-pix_fmt yuv420p`、`-c:a aac -b:a …`、`-movflags +faststart`、縮放濾鏡）。`-preset` 是 x264 專屬，拿掉。
+4. 測試：先偵測 `h264_videotoolbox` 在執行環境能否編碼；能就驗證輸出（格式、長度、尺寸、體積比上游預期合理），不能（例如模擬器沒有硬體編碼器）就 `XCTSkip` 並寫明原因，不讓 CI 時好時壞。
+
+### pdf.mono
+
+上游用 macOS 的 Quartz「Gray Tone」濾鏡把每頁重繪成灰階，文字和向量圖保持向量。iOS 沒有這個濾鏡，改成：
+
+- 每頁以灰階點陣化（設定頁選 150／200／300 dpi，預設 200），保留原頁面尺寸（cropBox）與旋轉角度。
+- 每頁疊一層看不見的文字（文字繪製模式 invisible），輸出仍可選取、搜尋、複製：
+  - 原 PDF 有可抽取的文字層 → 直接用原文字與位置（PDFKit 逐行選取的字串與邊界），不跑 OCR；
+  - 沒有文字層（掃描檔） → 沿用 pdf.ocr 的 Vision 辨識（zh-Hans、zh-Hant、en），用辨識框定位。
+- 逐頁串流：一次只算繪、寫入一頁，不把整份文件讀進記憶體。
+
+與上游的差異：
+
+| | 上游（Quartz 濾鏡） | iOS |
+|---|---|---|
+| 文字 | 向量，原樣保留 | 點陣圖＋隱形文字層（可選取、搜尋、複製，但放大會看到像素） |
+| 向量圖形 | 保持向量 | 點陣化 |
+| 檔案大小 | 通常和原檔差不多 | 可能變大（依 dpi 和頁數） |
+| 解析度 | 不適用 | 150／200／300 dpi 可選 |
+| 掃描檔文字 | 沒有文字層就沒有 | 會用 OCR 補上文字層 |
+| 連結、註解、表單、書籤 | 保留 | 不保留 |
+
+測試：每頁抽樣像素 R=G=B、頁數與原檔相同、頁面尺寸與旋轉相同、PDFKit 能抽出文字（有文字層的來源與掃描來源各一）。

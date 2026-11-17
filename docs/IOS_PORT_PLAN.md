@@ -63,7 +63,7 @@ Swift + AppKit，20 個 Swift 檔、約 6,200 行，`Catalog.allIDs` 共 **73 �
 |---|---|---|
 | `Shell.run` / `Process` | 一律不用；改 `FFmpegRunner` 或 Swift/C 函式庫 | — |
 | ffmpeg（AVIF、WebM、MP3、Opus、變速、響度、GIF 調色盤） | 自編 FFmpeg 9.0.2，參數字串沿用上游 | ✅ 目標 |
-| ffmpeg `libx264`（vid.to.mp4/mov 備援、vid.compress、vid.720p 備援、vid.fast/slow） | x264 是 GPL，禁用 → `h264_videotoolbox`（硬體編碼，CRF 改成目標位元率／品質） | ⚠️ |
+| ffmpeg `libx264`（vid.to.mp4/mov 備援、vid.compress、vid.720p 備援、vid.fast/slow） | x264 是 GPL，禁用 → `h264_videotoolbox`：`-crf` 換成 `-q:v`（crf 20→65、27→50），裝置不支援時依原片位元率換算 `-b:v`（規則見 PARITY.md 第 5 節） | ⚠️ |
 | ffprobe（時長、位元率、影音標籤） | `FFmpegRunner.probe`（libavformat） | ✅ 目標 |
 | cwebp `-q -mt -metadata icc` | libwebp：`WebPConfig.quality`、`thread_level=1`、ICC 以 WebPMux 寫入 | ✅ 目標 |
 | AVIF：ffmpeg libsvtav1 | 有 `public.avif` 編碼器就用 ImageIO，否則 FFmpeg libsvtav1（同參數） | ✅ 目標 |
@@ -71,7 +71,7 @@ Swift + AppKit，20 個 Swift 檔、約 6,200 行，`Catalog.allIDs` 共 **73 �
 | NSPrintOperation + NSTextView（A4，邊界 56/60） | UIPrintPageRenderer，同樣 595×842、同邊界 | ✅ 目標 |
 | afconvert | AVAssetReader/Writer、ExtAudioFile；FLAC 編碼器執行時偵測，不行就 FFmpeg `flac` | ✅ 目標 |
 | ditto / zip / unzip | ZIPFoundation | ✅ 目標（無 AppleDouble 資源分支，iOS 檔案沒有） |
-| QuartzFilter「Gray Tone」（pdf.mono） | iOS 沒有 Quartz 濾鏡 → 需替代方案（見風險 R6） | ⚠️ 待決定 |
+| QuartzFilter「Gray Tone」（pdf.mono） | 逐頁灰階點陣化（150／200／300 dpi，預設 200）＋隱形文字層（優先用原文字層，否則 Vision OCR），逐頁串流 | ⚠️ |
 | NSPasteboard | UIPasteboard | ✅ 目標 |
 | NSWorkspace 圖示／在 Finder 顯示 | QLThumbnailGenerator／在「檔案」顯示（`shareddocuments://`）／分享表單 | ⚠️ |
 | 開機啟動（SMAppService） | 不適用 → 「觸覺回饋」開關 | ⚠️ |
@@ -128,13 +128,13 @@ Swift + AppKit，20 個 Swift 檔、約 6,200 行，`Catalog.allIDs` 共 **73 �
 | # | 風險 | 影響 | 對策 |
 |---|---|---|---|
 | R1 | FFmpeg 在 iOS in-process 執行：fftools 有全域狀態、會呼叫 `exit()`、安裝 signal handler | 閃退、第二次執行出錯 | `fw_ffmpeg.c` 直接 `#include` ffmpeg.c，把 `main` 改名、`exit()` 改成 longjmp 回入口（非 session 執行緒則只結束該執行緒）、`signal()` 改成 no-op；每次執行前重設檔案內 static 與 CLI 全域選項；C 端互斥鎖＋Swift actor 確保一次一個 session（P0 已驗證） |
-| R2 | 上游大量使用 `libx264`（GPL） | 不能用 | 改 `h264_videotoolbox`，以位元率／品質參數逼近 CRF；PARITY 標 ⚠️ |
+| R2 | 上游大量使用 `libx264`（GPL）；模擬器可能沒有 VideoToolbox 編碼器 | 不能用；測試不穩 | 改 `h264_videotoolbox`，`-q:v`／`-b:v` 換算（PARITY 第 5 節）；測試先偵測編碼器，不能用就 `XCTSkip` 並寫明原因 |
 | R3 | FFmpeg 建置時間長（CI 約 1–2 小時） | CI 變慢 | 只在 `ffmpeg.yml` 手動建置並發布到 `ffmpeg-v<版本>` Release；一般 CI 只下載 |
 | R4 | 免費 Apple ID 側載：7 天重簽、3 個 App、每週 10 個 App ID | 使用者麻煩 | Share Extension 預設不包含（會多佔 App ID）；README 說明 |
 | R5 | iOS 沒有 textutil，Word/ODT 讀寫要自己做 | 文件轉換保真度下降 | 自寫 Docx/ODT（段落、標題、粗斜體底線、清單、超連結、表格、內嵌圖片）；來回轉換測試；.doc 寫出標 ⚠️ |
-| R6 | `pdf.mono` 依賴 macOS QuartzFilter（向量灰階） | iOS 無等效 API | 選項：(a) 逐頁點陣化成灰階影像再組 PDF（文字不再可選取，明顯降級）；(b) 解析並改寫 PDF 內容串流的顏色運算子（保留向量，工作量大、相容性風險）。**需要使用者決定**（P1 前） |
+| R6 | `pdf.mono` 依賴 macOS QuartzFilter（向量灰階） | iOS 無等效 API | **已決定**：灰階點陣化（預設 200 dpi）＋隱形文字層（原文字優先，否則 OCR），逐頁串流；檔案可能變大；PARITY 標 ⚠️ |
 | R7 | Vision 前景遮罩在模擬器上可能不可用 | img.cutout 測試 | 測試以有清楚主體的合成圖驗證；若模擬器缺能力，改用實機或以 API 能力檢查決定預期結果（不跳過測試） |
 | R8 | Extension 記憶體上限約 120 MB | Share Extension 轉檔會被殺 | Extension 只透過 App Group 轉交檔案，不在 extension 內轉檔 |
 | R9 | 背景執行時間有限 | 長影片轉檔被中止 | `beginBackgroundTask`；iOS 26+ `BGContinuedProcessingTask`；中止時清除半成品並顯示 WASTED |
 | R10 | GitHub macOS runner 映像與 Xcode 版本變動 | CI 突然壞掉 | `setup-xcode latest-stable`；模擬器動態挑選（`scripts/test.sh`） |
-| R11 | 使用者原文是 75 個動作，上游實際 73 個 | 範圍認知不一致 | 以 `Catalog.allIDs` 為準（73），已在回報中說明 |
+| R11 | 任務說明寫 75 個動作，上游 `Catalog.allIDs` 實際 73 個 | 範圍認知不一致 | **已確認**：以 73 為準 |

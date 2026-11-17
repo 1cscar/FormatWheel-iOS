@@ -60,7 +60,8 @@ in `docs/PARITY.md` explaining the difference. Never silently drop a feature.
 | Long jobs | `beginBackgroundTask`; `BGContinuedProcessingTask` on iOS 26+ |
 | Cutout / OCR | Vision `VNGenerateForegroundInstanceMaskRequest` / `VNRecognizeTextRequest` (zh-Hans, zh-Hant, en) |
 | `gen.path` | copy the Files-app location / file URL (⚠️) |
-| libx264 in upstream ffmpeg args | `h264_videotoolbox` (x264 is GPL, forbidden) (⚠️) |
+| libx264 in upstream ffmpeg args | `h264_videotoolbox` (x264 is GPL, forbidden) (⚠️): `-crf` → `-q:v` (`round(108 − 2.14·crf)`: 20→65, 27→50); if the device rejects `-q:v`, `-b:v` from the source bitrate (rules in PARITY.md §5); drop `-preset` |
+| QuartzFilter "Gray Tone" (`pdf.mono`) | grayscale raster per page (setting 150/200/300 dpi, default 200), same page size + rotation, invisible text layer (existing PDF text first, else the pdf.ocr Vision pipeline), streamed page by page (⚠️) |
 
 ImageIO, PDFKit, CoreImage, AVFoundation, CryptoKit, UTType port directly. Keep every upstream
 "no ffmpeg" fallback path (the runtime check is `Tools.ffmpegAvailable`, overridable in tests).
@@ -86,12 +87,14 @@ ImageIO, PDFKit, CoreImage, AVFoundation, CryptoKit, UTType port directly. Keep 
   conflict handling, ffmpeg arguments and note text (e.g. 「只取了前 30 秒」「截取了前 40 秒」) as close to
   verbatim as possible.
 - Upstream's action list is `Catalog.allIDs` — **73 IDs** at the pinned commit (the brief said 75;
-  Catalog.swift is authoritative).
+  the user confirmed 73).
 - Each action has at least one test. Fixtures are generated in code (`Tests/CoreTests/Fixtures.swift`):
   JPEG with GPS + device-model EXIF, multi-page PDF with an author, 1 s sine audio, 2 s colour-block video with
   an audio track via AVAssetWriter, generated docx. No large binaries in the repo.
 - Per group of work: tests → update `docs/PARITY.md` → commit (Conventional Commits, e.g.
   `feat(core): port pdf.split`) → push.
+- Hardware-dependent tests (VideoToolbox encoders on the simulator): detect the capability first; if it is
+  missing, `throw XCTSkip("<reason>")`. This is the only allowed kind of skip (user-approved 2026-11-17).
 - CI failures: read with `gh run watch` / `gh run view --log-failed`, fix the root cause. **Never disable or
   skip tests.**
 - Stop and ask the user for trade-offs: licensing, clearly degraded replacements, paid services.

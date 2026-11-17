@@ -3,7 +3,7 @@
 import os, re, sys, collections
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "scripts"))
-from parity_data import ACTIONS, FEATURES, CLI
+from parity_data import ACTIONS, FEATURES, CLI, NOTES
 
 catalog = open(os.path.join(ROOT, "upstream/Sources/Catalog.swift"), encoding="utf-8").read()
 ids = []
@@ -46,6 +46,7 @@ if warn:
     for k, v in warn: out.append(f"- **{k}**：{v}")
 else:
     out.append("（尚無已完成的 ⚠️ 項目；「預計 ⚠️」標在各列備註。）")
-out.append("")
+out.append("\n## 5. 替代方案說明\n")
+out.append(NOTES)
 open(os.path.join(ROOT, "docs/PARITY.md"), "w", encoding="utf-8").write("\n".join(out))
 print(f"docs/PARITY.md: {len(ACTIONS)} actions, {len(FEATURES)} features, {len(CLI)} flags")
