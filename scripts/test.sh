@@ -4,6 +4,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 [ -d FormatWheel.xcodeproj ] || xcodegen generate
+# Upstream catalog behaviour for CatalogParityTests (compiled from upstream/Sources/Catalog.swift).
+scripts/catalog-parity/dump-upstream.sh
 
 UDID="${SIM_UDID:-$(xcrun simctl list devices available -j | python3 -c '
 import json, os, sys

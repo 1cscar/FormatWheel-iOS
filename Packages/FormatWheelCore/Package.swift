@@ -10,13 +10,17 @@ let package = Package(
     products: [
         .library(name: "FormatWheelCore", type: .dynamic, targets: ["FormatWheelCore"]),
     ],
+    dependencies: [
+        .package(url: "https://github.com/weichsel/ZIPFoundation.git", exact: "0.9.20"),
+    ],
     targets: [
         // Prebuilt by scripts/build-ffmpeg.sh, downloaded by scripts/fetch-ffmpeg.sh.
         .binaryTarget(name: "FWFFmpeg", path: "Vendor/FWFFmpeg.xcframework"),
         .binaryTarget(name: "WebP", path: "Vendor/WebP.xcframework"),
         .target(
             name: "FormatWheelCore",
-            dependencies: ["FWFFmpeg", "WebP"],
+            dependencies: ["FWFFmpeg", "WebP", .product(name: "ZIPFoundation", package: "ZIPFoundation")],
+            resources: [.process("Resources")],
             swiftSettings: [.swiftLanguageMode(.v5)]
         ),
     ]
