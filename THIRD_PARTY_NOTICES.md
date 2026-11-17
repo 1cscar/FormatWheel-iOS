@@ -12,6 +12,7 @@ deliberately **not** included).
 | [libvpx](https://chromium.googlesource.com/webm/libvpx) | 1.17.0 | BSD-3-Clause + patent grant | VP8/VP9 (WebM), inside `FWFFmpeg.framework` |
 | [SVT-AV1](https://gitlab.com/AOMediaCodec/SVT-AV1) | 4.3.0 | BSD-3-Clause-Clear + AOMedia Patent License 1.0 | AV1 / AVIF encoder, inside `FWFFmpeg.framework` |
 | [libwebp](https://chromium.googlesource.com/webm/libwebp) | 1.6.0 | BSD-3-Clause + patent grant | inside `FWFFmpeg.framework` and statically in the app (`WebP.xcframework`) |
+| [ZIPFoundation](https://github.com/weichsel/ZIPFoundation) | 0.9.20 | MIT | ZIP archives (gen.zip, Word/ODT containers), Swift package |
 | [FormatWheel (macOS)](https://github.com/Elise616/FormatWheel) | 1eb19a1 | MIT | the original app this project ports (see `LICENSE`) |
 
 ## FFmpeg and LGPL compliance
@@ -1535,6 +1536,37 @@ constitute direct or contributory patent infringement, or inducement of
 patent infringement, then any patent rights granted to you under this License
 for these implementations of WebM shall terminate as of the date such
 litigation is filed.
+
+```
+
+</details>
+
+### ZIPFoundation — MIT
+
+<details><summary><code>LICENSE</code></summary>
+
+```text
+MIT License
+
+Copyright (c) 2017-2025 Thomas Zoechling (https://www.peakstep.com)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 ```
 

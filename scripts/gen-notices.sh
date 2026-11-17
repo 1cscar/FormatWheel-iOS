@@ -35,6 +35,7 @@ deliberately **not** included).
 | [libvpx](https://chromium.googlesource.com/webm/libvpx) | $LIBVPX_VERSION | BSD-3-Clause + patent grant | VP8/VP9 (WebM), inside \`FWFFmpeg.framework\` |
 | [SVT-AV1](https://gitlab.com/AOMediaCodec/SVT-AV1) | $SVTAV1_VERSION | BSD-3-Clause-Clear + AOMedia Patent License 1.0 | AV1 / AVIF encoder, inside \`FWFFmpeg.framework\` |
 | [libwebp](https://chromium.googlesource.com/webm/libwebp) | $LIBWEBP_VERSION | BSD-3-Clause + patent grant | inside \`FWFFmpeg.framework\` and statically in the app (\`WebP.xcframework\`) |
+| [ZIPFoundation](https://github.com/weichsel/ZIPFoundation) | 0.9.20 | MIT | ZIP archives (gen.zip, Word/ODT containers), Swift package |
 | [FormatWheel (macOS)](https://github.com/Elise616/FormatWheel) | 1eb19a1 | MIT | the original app this project ports (see \`LICENSE\`) |
 
 ## FFmpeg and LGPL compliance
@@ -61,6 +62,9 @@ section "Opus — BSD-3-Clause" "$SRC/opus/COPYING"
 section "libvpx — BSD-3-Clause and patent grant" "$SRC/libvpx/LICENSE" "$SRC/libvpx/PATENTS"
 section "SVT-AV1 — BSD-3-Clause-Clear and AOMedia Patent License 1.0" "$SRC/svtav1/LICENSE.md" "$SRC/svtav1/PATENTS.md"
 section "libwebp — BSD-3-Clause and patent grant" "$SRC/libwebp/COPYING" "$SRC/libwebp/PATENTS"
+ZIPF="$(find "$ROOT/build" -path '*checkouts/ZIPFoundation/LICENSE' -print -quit 2>/dev/null)"
+[ -n "$ZIPF" ] || { echo "ZIPFoundation checkout not found; build the project once (xcodegen generate && scripts/test.sh)" >&2; exit 1; }
+section "ZIPFoundation — MIT" "$ZIPF"
 section "FormatWheel (macOS original) — MIT" "$ROOT/upstream/LICENSE"
 } > "$OUT"
 echo "wrote $OUT ($(wc -l < "$OUT") lines)"
