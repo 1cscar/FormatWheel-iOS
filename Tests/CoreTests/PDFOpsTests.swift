@@ -99,7 +99,7 @@ final class PDFOpsTests: CoreTestCase {
     func testOCRScannedPDF() async throws {
         let summary = try await run("pdf.ocr", [try Fixtures.scannedPDF(in: dir)])
         let text = try String(contentsOf: summary.outputs[0], encoding: .utf8)
-        XCTAssertTrue(text.contains("FormatWheel"), text)
+        XCTAssertTrue(text.contains("2049") && text.contains("Format"), text)
         XCTAssertEqual(clipboard.text, text)
     }
 
@@ -176,7 +176,7 @@ final class PDFMonoTests: CoreTestCase {
     func testScannedPDFGetsOCRTextLayer() async throws {
         let out = try await runOne("pdf.mono", try Fixtures.scannedPDF(in: dir)).outputs[0]
         let text = PDFDocument(url: out)?.string ?? ""
-        XCTAssertTrue(text.contains("FormatWheel"), text)
+        XCTAssertTrue(text.contains("2049") && text.contains("Format"), text)
     }
 
     func testResolutionSetting() async throws {

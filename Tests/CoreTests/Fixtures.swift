@@ -77,17 +77,19 @@ enum Fixtures {
         return ctx.makeImage()!
     }
 
-    /// A bold red disc on a plain light background — a clear foreground subject for Vision.
+    /// A dog (Apple Color Emoji, rendered large) on a plain light background — a clear, natural
+    /// foreground subject for Vision's foreground-instance mask.
     static func subjectImage() -> CGImage {
-        let w = 800, h = 600
+        let w = 900, h = 700
         let ctx = CGContext(data: nil, width: w, height: h, bitsPerComponent: 8, bytesPerRow: 0,
                             space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue)!
         ctx.setFillColor(CGColor(srgbRed: 0.93, green: 0.94, blue: 0.96, alpha: 1))
         ctx.fill(CGRect(x: 0, y: 0, width: w, height: h))
-        ctx.setFillColor(CGColor(srgbRed: 0.85, green: 0.15, blue: 0.2, alpha: 1))
-        ctx.fillEllipse(in: CGRect(x: 250, y: 150, width: 300, height: 300))
-        ctx.setFillColor(CGColor(srgbRed: 0.2, green: 0.2, blue: 0.25, alpha: 1))
-        ctx.fill(CGRect(x: 380, y: 60, width: 40, height: 120))
+        let font = CTFontCreateWithName("AppleColorEmoji" as CFString, 480, nil)
+        let line = CTLineCreateWithAttributedString(NSAttributedString(string: "🐕", attributes: [.init(kCTFontAttributeName as String): font]))
+        let width = CTLineGetTypographicBounds(line, nil, nil, nil)
+        ctx.textPosition = CGPoint(x: (CGFloat(w) - CGFloat(width)) / 2, y: 140)
+        CTLineDraw(line, ctx)
         return ctx.makeImage()!
     }
 
