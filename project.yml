@@ -2,8 +2,8 @@
 # The .xcodeproj is not committed. Run scripts/fetch-ffmpeg.sh first (Vendor/FFmpeg).
 name: FormatWheel
 options:
-  # Placeholder: replace YOUR_GITHUB_USERNAME (see README → 「修改 Bundle ID」).
-  bundleIdPrefix: io.github.YOUR_GITHUB_USERNAME
+  # Bundle ID io.github.1cscar.formatwheel; forks replace "1cscar" (see README → 「修改 Bundle ID」).
+  bundleIdPrefix: io.github.1cscar
   deploymentTarget:
     iOS: "17.0"
   developmentLanguage: zh-Hans
@@ -52,7 +52,7 @@ targets:
     settings:
       base:
         PRODUCT_NAME: FormatWheel
-        PRODUCT_BUNDLE_IDENTIFIER: io.github.YOUR_GITHUB_USERNAME.formatwheel
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.1cscar.formatwheel
         INFOPLIST_FILE: App/Resources/Info.plist
         CODE_SIGN_ENTITLEMENTS: App/FormatWheel.entitlements
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
@@ -69,7 +69,7 @@ targets:
       - package: FormatWheelCore
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: io.github.YOUR_GITHUB_USERNAME.formatwheel.CoreTests
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.1cscar.formatwheel.CoreTests
         GENERATE_INFOPLIST_FILE: YES
 
   AppTests:
@@ -83,7 +83,7 @@ targets:
       - package: FormatWheelArt
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: io.github.YOUR_GITHUB_USERNAME.formatwheel.AppTests
+        PRODUCT_BUNDLE_IDENTIFIER: io.github.1cscar.formatwheel.AppTests
         GENERATE_INFOPLIST_FILE: YES
 
 schemes:

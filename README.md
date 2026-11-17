@@ -24,9 +24,10 @@ open FormatWheel.xcodeproj
 
 ### 修改 Bundle ID
 
-預設是佔位符 `io.github.YOUR_GITHUB_USERNAME.formatwheel`。用自己的 Apple ID 建置前，把
-[`project.yml`](project.yml) 裡所有 `YOUR_GITHUB_USERNAME`（`bundleIdPrefix` 與各 target 的
-`PRODUCT_BUNDLE_IDENTIFIER`）換成你的 GitHub 帳號或任何唯一字串，再執行 `xcodegen generate`。
+預設是 `io.github.1cscar.formatwheel`。用自己的 Apple ID 在 Xcode 建置時，如果遇到 Bundle ID 已被佔用，把
+[`project.yml`](project.yml) 裡所有 `1cscar`（`bundleIdPrefix` 與各 target 的
+`PRODUCT_BUNDLE_IDENTIFIER`）換成你的 GitHub 帳號或任何只含英數字與 `-` 的唯一字串，再執行 `xcodegen generate`。
+（AltStore / SideStore 側載不需要改，它們會自動加上你的 Team ID。）
 
 ## 文件
 

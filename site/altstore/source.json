@@ -1,12 +1,12 @@
 {
   "name": "FormatWheel",
-  "identifier": "io.github.YOUR_GITHUB_USERNAME.formatwheel.source",
+  "identifier": "io.github.1cscar.formatwheel.source",
   "subtitle": "格式輪盤 — 長按、甩一下，轉好了。",
   "description": "Native iOS/iPadOS port of the macOS app FormatWheel (格式轮盘). On-device conversions for images, PDF, video, audio and documents.",
   "apps": [
     {
       "name": "格式輪盤 FormatWheel",
-      "bundleIdentifier": "io.github.YOUR_GITHUB_USERNAME.formatwheel",
+      "bundleIdentifier": "io.github.1cscar.formatwheel",
       "developerName": "FormatWheel iOS contributors",
       "subtitle": "長按、甩一下，轉好了。",
       "localizedDescription": "把檔案丟進武器輪盤，往格式槽位一甩就轉檔。73 種轉換與小工具，全部在裝置上完成、不連網。",

@@ -28,6 +28,9 @@ jobs:
       - name: Install tools
         run: brew install xcodegen ldid
 
+      - name: FormatWheelArt package tests (macOS)
+        run: swift test --package-path Packages/FormatWheelArt
+
       - name: Fetch prebuilt FFmpeg
         run: scripts/fetch-ffmpeg.sh
 

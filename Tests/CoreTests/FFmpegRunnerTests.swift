@@ -15,7 +15,7 @@ final class FFmpegRunnerTests: XCTestCase {
     func testBuildIsLGPLWithRequiredComponents() {
         XCTAssertFalse(runner.configuration.contains("--enable-gpl"))
         XCTAssertFalse(runner.configuration.contains("--enable-nonfree"))
-        XCTAssertTrue(runner.license.contains("Lesser"), runner.license)
+        XCTAssertTrue(runner.license.hasPrefix("LGPL"), runner.license)
         for encoder in ["libmp3lame", "libopus", "libvpx-vp9", "libwebp", "libsvtav1", "h264_videotoolbox", "hevc_videotoolbox", "aac", "flac", "alac"] {
             XCTAssertTrue(runner.hasEncoder(encoder), "missing encoder \(encoder)")
         }
@@ -60,12 +60,14 @@ final class FFmpegRunnerTests: XCTestCase {
     func testCancelStopsRunAndNextRunStillWorks() async throws {
         let dir = try Fixtures.tempDir()
         defer { try? FileManager.default.removeItem(at: dir) }
-        let output = dir.appendingPathComponent("long.flac")
+        let input = try Fixtures.sineWAV(seconds: 1, in: dir)
+        let output = dir.appendingPathComponent("endless.flac")
+        // -stream_loop -1 never ends on its own; only cancellation can stop it.
         let task = Task {
-            try await runner.run(["-hide_banner", "-nostdin", "-y", "-loglevel", "error", "-f", "lavfi", "-i", "sine=frequency=220:duration=3600",
+            try await runner.run(["-hide_banner", "-nostdin", "-y", "-loglevel", "error", "-stream_loop", "-1", "-i", input.path,
                                   "-c:a", "flac", "-compression_level", "12", output.path], duration: 3600)
         }
-        try await Task.sleep(nanoseconds: 400_000_000)
+        try await Task.sleep(nanoseconds: 500_000_000)
         task.cancel()
         do {
             _ = try await task.value
@@ -75,6 +77,19 @@ final class FFmpegRunnerTests: XCTestCase {
         }
         // The runner must be reusable after a cancelled session.
         try await testSineWaveToMP3()
+    }
+
+    func testManyRunsInARowReuseGlobalState() async throws {
+        let dir = try Fixtures.tempDir()
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let input = try Fixtures.sineWAV(seconds: 1, in: dir)
+        for n in 0..<5 {
+            let out = dir.appendingPathComponent("\(n).wav")
+            try await runner.run(["-hide_banner", "-nostdin", "-y", "-loglevel", "error", "-i", input.path, "-ac", "1", "-c:a", "pcm_s16le", out.path])
+            XCTAssertEqual(runner.probe(out)?.channels, 1)
+            // An error in between must not poison the next run.
+            _ = try? await runner.run(["-hide_banner", "-nostdin", "-y", "-loglevel", "error", "-i", "/nonexistent.wav", out.path + ".mp3"])
+        }
     }
 
     func testSessionsRunOneAtATime() async throws {

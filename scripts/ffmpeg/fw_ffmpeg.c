@@ -47,6 +47,18 @@ int fw_ffmpeg_execute(int argc, char **argv, fw_log_callback log, void *context)
     atomic_store(&transcode_init_done, 0);
     ffmpeg_exited = 0;
     copy_ts_first_pts = AV_NOPTS_VALUE;
+    // ffmpeg_cleanup() frees these arrays but leaves the counters (a CLI exits right after); a second
+    // in-process run would append past a stale count and crash.
+    input_files = NULL;
+    nb_input_files = 0;
+    output_files = NULL;
+    nb_output_files = 0;
+    filtergraphs = NULL;
+    nb_filtergraphs = 0;
+    decoders = NULL;
+    nb_decoders = 0;
+    progress_avio = NULL;
+    vstats_file = NULL;
     // Options that are process globals in the CLI and would otherwise leak into the next run.
     stdin_interaction = 1;
     print_stats = -1;

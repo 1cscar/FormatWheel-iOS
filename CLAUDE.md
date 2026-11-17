@@ -37,7 +37,7 @@ in `docs/PARITY.md` explaining the difference. Never silently drop a feature.
 8. Localisation with String Catalogs: **zh-Hans = upstream's original text** (also the source language and
    the lookup key), zh-Hant (Taiwan wording), en; follows the system language. Code identifiers and comments
    in English; README and user docs in Traditional Chinese.
-9. Bundle ID placeholder `io.github.YOUR_GITHUB_USERNAME.formatwheel` (in `project.yml`); README explains
+9. Bundle ID `io.github.1cscar.formatwheel` (user-approved; the original `YOUR_GITHUB_USERNAME` placeholder had underscores, which bundle IDs reject) in `project.yml`; README explains
    what to change.
 
 ## Porting rules (macOS → iOS)
