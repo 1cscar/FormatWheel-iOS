@@ -6,43 +6,43 @@
 
 狀態：⬜ 未開始 · 🟨 進行中 · ✅ 完成且有測試 · ⚠️ 有差異（見備註）
 
-動作進度：⬜ 73
+動作進度：⚠️ 2 · ✅ 31 · ⬜ 39 · 🟨 1
 
 ## 1. 動作（73）
 
 | # | ID | 類別 | 上游檔案與函式 | macOS 專屬依賴 | iOS 實作 | 狀態 | 備註 |
 |---|---|---|---|---|---|---|---|
-| 1 | `img.to.png` | 圖片 | ImageOps.convert → write(png) | — | ImageIO（同上游） | ⬜ |  |
-| 2 | `img.to.jpg` | 圖片 | ImageOps.convert → write(jpg, q0.9, flatten) | — | ImageIO（同上游） | ⬜ |  |
-| 3 | `img.to.heic` | 圖片 | ImageOps.convert → write(heic, q0.82) | — | ImageIO；裝置沒有 HEIC 編碼器時槽位「未装备」 | ⬜ | 上游一律可用；iOS 依 `CGImageDestinationCopyTypeIdentifiers()` 判斷 |
-| 4 | `img.to.webp` | 圖片 | ImageOps.writeWebP（cwebp -q 84 -mt -metadata icc） | cwebp（Homebrew） | libwebp：quality 84、thread_level 1、ICC 以 WebPMux 寫入 | ⬜ | 上游沒裝 cwebp 時「未装备」；iOS 內建 libwebp，永遠可用 |
-| 5 | `img.to.pdf` | 圖片 | ImageOps.convert → PDFMaker.write；多張 → PDFOps.merge（合并成 PDF） | — | CGContext PDF（同上游） | ⬜ | 多檔邏輯沿用 Engine.run 特例 |
-| 6 | `img.to.avif` | 圖片 | ImageOps.writeAVIF（ffmpeg libsvtav1 -crf (52-q*34) -preset 6, yuv420p, 先鋪白） | ffmpeg | ImageIO 有 `public.avif` 編碼器就用，否則 FFmpeg libsvtav1（同參數） | ⬜ |  |
-| 7 | `img.to.gif` | 圖片 | ImageOps.convert → write(gif) | — | ImageIO（同上游） | ⬜ |  |
-| 8 | `img.to.tiff` | 圖片 | ImageOps.convert → write(tiff, LZW) | — | ImageIO（同上游） | ⬜ |  |
-| 9 | `img.compress` | 圖片 | ImageOps.compress（≤4096、同格式降品質、透明 PNG→WebP、shrinkResult） | cwebp（透明圖） | ImageIO + libwebp | ⬜ | 「已经很小了，压不动了」沿用 |
-| 10 | `img.half` | 圖片 | ImageOps.half（長寬各半，note = 尺寸） | — | CoreGraphics（同上游） | ⬜ |  |
-| 11 | `img.cutout` | 圖片 | ImageOps.cutout（VNGenerateForegroundInstanceMaskRequest → 透明 PNG） | — | Vision（iOS 17+，同 API） | ⬜ | 見風險 R7（模擬器能力） |
-| 12 | `img.ocr` | 圖片 | ImageOps.ocr（VNRecognizeTextRequest zh-Hans/zh-Hant/en → .txt + 剪貼簿） | NSPasteboard | Vision + 注入的 UIPasteboard | ⬜ |  |
-| 13 | `img.mono` | 圖片 | ImageOps.mono（CIPhotoEffectMono） | — | CoreImage（同上游） | ⬜ |  |
-| 14 | `img.rotate` | 圖片 | ImageOps.rotate（順時針 90°） | — | CoreGraphics（同上游） | ⬜ |  |
-| 15 | `img.strip` | 圖片 | ImageOps.strip（CGImageDestinationCopyImageSource 去 GPS/XMP，不重新編碼；否則重寫） | — | ImageIO（同上游） | ⬜ | 測試需驗證 GPS 與機型真的消失 |
-| 16 | `img.backdrop` | 圖片 | ImageOps.backdrop（漸層、9% 邊距、圓角、陰影 → PNG） | — | CoreGraphics（同上游） | ⬜ |  |
-| 17 | `pdf.to.png` | PDF | PDFOps.toImages(png, scale 2；多頁 → 資料夾 base-NN) | — | CGPDF + ImageIO（同上游） | ⬜ |  |
-| 18 | `pdf.to.jpg` | PDF | PDFOps.toImages(jpg q0.9) | — | CGPDF + ImageIO（同上游） | ⬜ |  |
-| 19 | `pdf.to.long` | PDF | PDFOps.longImage（寬 1242、間距 16、>60000px 分段、最多 120 頁） | — | CoreGraphics（同上游） | ⬜ | 「只拼了前 N 页」沿用 |
+| 1 | `img.to.png` | 圖片 | ImageOps.convert → write(png) | — | ImageIO（同上游） | ✅ | ImageOpsTests.testToPNG / testConvertKeepsGPSLikeUpstream |
+| 2 | `img.to.jpg` | 圖片 | ImageOps.convert → write(jpg, q0.9, flatten) | — | ImageIO（同上游） | ✅ | ImageOpsTests.testToJPGFlattensAlpha |
+| 3 | `img.to.heic` | 圖片 | ImageOps.convert → write(heic, q0.82) | — | ImageIO；裝置沒有 HEIC 編碼器時槽位「未装备」 | ✅ | iOS 依 ImageIO HEIC 編碼器判斷（CatalogParityTests 例外清單）；ImageOpsTests.testToHEIC |
+| 4 | `img.to.webp` | 圖片 | ImageOps.writeWebP（cwebp -q 84 -mt -metadata icc） | cwebp（Homebrew） | libwebp：quality 84、thread_level 1、ICC 以 WebPMux 寫入 | ✅ | libwebp 內建，永遠可用（CatalogParityTests 例外清單）；驗證 RIFF、alpha、ICCP chunk |
+| 5 | `img.to.pdf` | 圖片 | ImageOps.convert → PDFMaker.write；多張 → PDFOps.merge（合并成 PDF） | — | CGContext PDF（同上游） | ✅ | 單張與多張合併（「1 合并.pdf」，3 頁） |
+| 6 | `img.to.avif` | 圖片 | ImageOps.writeAVIF（ffmpeg libsvtav1 -crf (52-q*34) -preset 6, yuv420p, 先鋪白） | ffmpeg | ImageIO 有 `public.avif` 編碼器就用，否則 FFmpeg libsvtav1（同參數） | ✅ | ImageIO 與 FFmpeg libsvtav1 兩條路徑都有測試（例外清單：requires 改為「ImageIO 或 FFmpeg」） |
+| 7 | `img.to.gif` | 圖片 | ImageOps.convert → write(gif) | — | ImageIO（同上游） | ✅ |  |
+| 8 | `img.to.tiff` | 圖片 | ImageOps.convert → write(tiff, LZW) | — | ImageIO（同上游） | ✅ | 驗證 LZW |
+| 9 | `img.compress` | 圖片 | ImageOps.compress（≤4096、同格式降品質、透明 PNG→WebP、shrinkResult） | cwebp（透明圖） | ImageIO + libwebp | ✅ | 含透明 PNG → WebP、「已经很小了，压不动了」 |
+| 10 | `img.half` | 圖片 | ImageOps.half（長寬各半，note = 尺寸） | — | CoreGraphics（同上游） | ✅ |  |
+| 11 | `img.cutout` | 圖片 | ImageOps.cutout（VNGenerateForegroundInstanceMaskRequest → 透明 PNG） | — | Vision（iOS 17+，同 API） | 🟨 | 已移植；模擬器的 Vision 無法建立推論上下文（只有 simulator GPU），測試在模擬器以 XCTSkip 標明原因，**待實機驗證**；此時 App 顯示「这台设备跑不了抠图模型」 |
+| 12 | `img.ocr` | 圖片 | ImageOps.ocr（VNRecognizeTextRequest zh-Hans/zh-Hant/en → .txt + 剪貼簿） | NSPasteboard | Vision + 注入的 UIPasteboard | ✅ | 文字寫檔＋剪貼簿 |
+| 13 | `img.mono` | 圖片 | ImageOps.mono（CIPhotoEffectMono） | — | CoreImage（同上游） | ✅ | 抽樣像素 R=G=B |
+| 14 | `img.rotate` | 圖片 | ImageOps.rotate（順時針 90°） | — | CoreGraphics（同上游） | ✅ |  |
+| 15 | `img.strip` | 圖片 | ImageOps.strip（CGImageDestinationCopyImageSource 去 GPS/XMP，不重新編碼；否則重寫） | — | ImageIO（同上游） | ✅ | 驗證 GPS／機型／拍攝時間／序號全數消失，通緝星等歸零 |
+| 16 | `img.backdrop` | 圖片 | ImageOps.backdrop（漸層、9% 邊距、圓角、陰影 → PNG） | — | CoreGraphics（同上游） | ✅ |  |
+| 17 | `pdf.to.png` | PDF | PDFOps.toImages(png, scale 2；多頁 → 資料夾 base-NN) | — | CGPDF + ImageIO（同上游） | ✅ | 多頁 → 資料夾 base-01… |
+| 18 | `pdf.to.jpg` | PDF | PDFOps.toImages(jpg q0.9) | — | CGPDF + ImageIO（同上游） | ✅ |  |
+| 19 | `pdf.to.long` | PDF | PDFOps.longImage（寬 1242、間距 16、>60000px 分段、最多 120 頁） | — | CoreGraphics（同上游） | ✅ | 「3 页拼成一张」 |
 | 20 | `pdf.to.docx` | PDF | PDFOps.toText → DocOps.write(docx)（NSAttributedString → officeOpenXML） | AppKit DocumentType.officeOpenXML | PDFKit 段落重建（同上游）+ 自寫 DocxWriter | ⬜ | P3 |
-| 21 | `pdf.to.txt` | PDF | PDFOps.toText(txt)（PDFSelection 逐行重組段落、TextFix.radicals） | — | PDFKit（同上游） | ⬜ |  |
-| 22 | `pdf.to.md` | PDF | PDFOps.toText → Markdown.from（字級推斷標題） | NSFont | PDFKit + CTFont 取字級／粗體 | ⬜ |  |
-| 23 | `pdf.to.rtf` | PDF | PDFOps.toText → NSAttributedString RTF | AppKit DocumentType.rtf | 注入的 RichTextCodec（UIKit NSAttributedString RTF） | ⬜ |  |
-| 24 | `pdf.to.html` | PDF | PDFOps.toText → NSAttributedString HTML | AppKit DocumentType.html | 注入的 RichTextCodec（HTML） | ⬜ |  |
-| 25 | `pdf.compress` | PDF | PDFOps.compress（PDFDocument.write saveImagesAsJPEG + optimizeImagesForScreen） | — | PDFKit 寫出選項（iOS 16+） | ⬜ | 「这个 PDF 已经很精简了」沿用 |
-| 26 | `pdf.split` | PDF | PDFOps.split（每頁一檔 → 資料夾「拆分」） | — | PDFKit（同上游） | ⬜ |  |
-| 27 | `pdf.merge` | PDF | PDFOps.merge（PDF 與圖片依拖入順序合併） | — | PDFKit（同上游） | ⬜ | 少於 2 個 PDF 時停用（同上游） |
-| 28 | `pdf.rotate` | PDF | PDFOps.rotate（每頁 +90°） | — | PDFKit（同上游） | ⬜ |  |
-| 29 | `pdf.mono` | PDF | PDFOps.mono（QuartzFilter「Gray Tone」重繪，文字保持向量） | QuartzFilter（macOS 專屬） | 逐頁以灰階點陣化（設定 150／200／300 dpi，預設 200），保留頁面尺寸與旋轉；加上看不見的文字層：原 PDF 有可抽取文字就用原文字與位置，否則用 pdf.ocr 的 Vision 流程；逐頁串流 | ⬜ | 預計 ⚠️：見第 5 節「pdf.mono」 |
-| 30 | `pdf.ocr` | PDF | PDFOps.ocr（逐頁渲染 + Vision） | NSPasteboard | CGPDF + Vision + UIPasteboard | ⬜ |  |
-| 31 | `pdf.strip` | PDF | Privacy.stripPDF（清作者、軟體、主題、關鍵詞、日期） | — | PDFKit（同上游） | ⬜ |  |
+| 21 | `pdf.to.txt` | PDF | PDFOps.toText(txt)（PDFSelection 逐行重組段落、TextFix.radicals） | — | PDFKit（同上游） | ✅ | 段落重建；無文字層時提示「试试「工具 → 识字」」 |
+| 22 | `pdf.to.md` | PDF | PDFOps.toText → Markdown.from（字級推斷標題） | NSFont | PDFKit + CTFont 取字級／粗體 | ✅ | 依字級推斷標題 |
+| 23 | `pdf.to.rtf` | PDF | PDFOps.toText → NSAttributedString RTF | AppKit DocumentType.rtf | 注入的 RichTextCodec（UIKit NSAttributedString RTF） | ✅ | App 注入的 RichTextCodec，讀回驗證 |
+| 24 | `pdf.to.html` | PDF | PDFOps.toText → NSAttributedString HTML | AppKit DocumentType.html | 注入的 RichTextCodec（HTML） | ✅ | 同上 |
+| 25 | `pdf.compress` | PDF | PDFOps.compress（PDFDocument.write saveImagesAsJPEG + optimizeImagesForScreen） | — | PDFKit 寫出選項；無效時（iOS）改用 PDFWriter 重新編碼圖片 | ✅ | iOS PDFKit 會忽略 saveImagesAsJPEG／optimizeImagesForScreen，改用自寫 PDFWriter 只重新編碼大型 8-bit RGB／灰階圖片（長邊 ≤1600 px、JPEG 0.7），文字、向量、連結、表單、書籤原樣保留 |
+| 26 | `pdf.split` | PDF | PDFOps.split（每頁一檔 → 資料夾「拆分」） | — | PDFKit（同上游） | ✅ |  |
+| 27 | `pdf.merge` | PDF | PDFOps.merge（PDF 與圖片依拖入順序合併） | — | PDFKit（同上游） | ✅ | PDF＋圖片依序合併 |
+| 28 | `pdf.rotate` | PDF | PDFOps.rotate（每頁 +90°） | — | PDFKit（同上游） | ✅ |  |
+| 29 | `pdf.mono` | PDF | PDFOps.mono（QuartzFilter「Gray Tone」重繪，文字保持向量） | QuartzFilter（macOS 專屬） | 逐頁以灰階點陣化（設定 150／200／300 dpi，預設 200），保留頁面尺寸與旋轉；隱形文字層（原 PDF 有文字層就用原文字與位置，否則 Vision OCR）；逐頁串流；PDFWriter 組裝並複製註解、書籤、表單、具名目的地 | ⚠️ | 見第 5 節「pdf.mono」：灰階點陣化＋隱形文字層；旋轉、所有註解（連結、螢光筆＋彈出備註、表單欄位）、書籤、具名目的地都保留 |
+| 30 | `pdf.ocr` | PDF | PDFOps.ocr（逐頁渲染 + Vision） | NSPasteboard | CGPDF + Vision + UIPasteboard | ✅ | 掃描檔 |
+| 31 | `pdf.strip` | PDF | Privacy.stripPDF（清作者、軟體、主題、關鍵詞、日期） | — | PDFKit（同上游） | ✅ | 作者／軟體／關鍵詞清除，星等 4 → 0 |
 | 32 | `vid.to.mp4` | 影片 | MediaOps.video（AVAssetExportSession passthrough／HighestQuality；不支援時 ffmpeg libx264 crf 20） | ffmpeg libx264（備援） | AVFoundation；備援 FFmpeg `h264_videotoolbox` | ⬜ | 預計 ⚠️：x264 為 GPL。換算規則見第 5 節「libx264 → h264_videotoolbox」 |
 | 33 | `vid.to.mov` | 影片 | 同上，mov | ffmpeg libx264（備援） | AVFoundation；備援 FFmpeg `h264_videotoolbox` | ⬜ | 預計 ⚠️：x264 為 GPL。換算規則見第 5 節「libx264 → h264_videotoolbox」 |
 | 34 | `vid.to.hevc` | 影片 | ffmpeg hevc_videotoolbox -b:v 來源/2（1.2–25 Mbps）；無 ffmpeg → AVAssetExportPresetHEVCHighestQuality | ffmpeg | FFmpeg hevc_videotoolbox（同參數）；備援保留 | ⬜ |  |
@@ -81,12 +81,12 @@
 | 67 | `doc.strip` | 文件 | Privacy.stripDocx（unzip core.xml/app.xml → 清欄位 → zip 回去） | unzip、zip | ZIPFoundation 改寫 docProps/core.xml 與 app.xml | ⬜ | P3 |
 | 68 | `doc.count` | 文件 | DocOps.count（中文字 + 英文詞 + 字元數） | textutil | DocReader（同上游計數邏輯） | ⬜ | P3 |
 | 69 | `doc.copy` | 文件 | DocOps.copy（全文 → 剪貼簿） | textutil、NSPasteboard | DocReader + UIPasteboard | ⬜ | P3 |
-| 70 | `gen.zip` | 通用 | GenericOps.zip（ditto -c -k --sequesterRsrc --keepParent；多檔 →「归档 N 项.zip」） | ditto | ZIPFoundation（同命名） | ⬜ | iOS 檔案沒有資源分支，不產生 AppleDouble |
-| 71 | `gen.path` | 通用 | Engine.run：檔案 POSIX 路徑 → 剪貼簿 | NSPasteboard | 複製「檔案」App 中的位置或 file URL | ⬜ | 預計 ⚠️：iOS 沙盒路徑對使用者沒有意義 |
-| 72 | `gen.sha` | 通用 | GenericOps.sha256（CryptoKit 串流 4 MB、複製全值） | NSPasteboard | CryptoKit + UIPasteboard | ⬜ |  |
-| 73 | `gen.name` | 通用 | Engine.run：檔名 → 剪貼簿 | NSPasteboard | UIPasteboard | ⬜ |  |
+| 70 | `gen.zip` | 通用 | GenericOps.zip（ditto -c -k --sequesterRsrc --keepParent；多檔 →「归档 N 项.zip」） | ditto | ZIPFoundation（同命名） | ✅ | 單檔、資料夾（keepParent）、多檔「归档 N 项.zip」；iOS 沒有資源分支，不產生 AppleDouble |
+| 71 | `gen.path` | 通用 | Engine.run：檔案 POSIX 路徑 → 剪貼簿 | NSPasteboard | 複製「檔案」App 中的位置或 file URL | ⚠️ | 複製「檔案」App 中的位置（「我的 iPhone › 格式轮盘 › …」「iCloud 云盘 › …」），其他位置複製 file URL；iOS 沙盒路徑對使用者沒有意義 |
+| 72 | `gen.sha` | 通用 | GenericOps.sha256（CryptoKit 串流 4 MB、複製全值） | NSPasteboard | CryptoKit + UIPasteboard | ✅ |  |
+| 73 | `gen.name` | 通用 | Engine.run：檔名 → 剪貼簿 | NSPasteboard | UIPasteboard | ✅ |  |
 
-## 2. 非動作功能（49）
+## 2. 非動作功能（50）
 
 | 功能 | 上游 | iOS 實作 | 狀態 | 備註 |
 |---|---|---|---|---|
@@ -121,24 +121,25 @@
 | 音效開關 | Settings.sound | 設定頁 | ⬜ |  |
 | 背景虛化開關 | Settings.blur | 設定頁 | ⬜ |  |
 | 登入時自動啟動 | SMAppService | 不適用 → 「觸覺回饋」開關 | ⬜ | 預計 ⚠️ |
-| PDF 黑白解析度（150／200／300 dpi，預設 200） | （上游沒有；Quartz 濾鏡保持向量） | 設定頁，供 pdf.mono 使用 | ⬜ | iOS 新增，配合 pdf.mono 的 ⚠️ |
-| 彈藥狀態（ffmpeg ✓ cwebp ✓） | AppDelegate.toolStatus | 設定頁「弹药状态」顯示 FFmpeg / libwebp 版本 | ⬜ | P0 首頁已顯示版本 |
+| PDF 黑白解析度（150／200／300 dpi，預設 200） | （上游沒有；Quartz 濾鏡保持向量） | 設定頁，供 pdf.mono 使用 | 🟨 | 首頁暫放選擇器，P4 移到設定頁 |
+| 彈藥狀態（ffmpeg ✓ cwebp ✓） | AppDelegate.toolStatus | 設定頁「弹药状态」顯示 FFmpeg / libwebp 版本 | 🟨 | 首頁已顯示 HEIC／AVIF（系統）／AVIF（FFmpeg）／WebP 能力與各函式庫版本；設定頁 P4 |
 | 最近轉換（8 筆，點擊在 Finder 顯示） | Recents、選單 | 設定頁／首頁：重開、分享、在「檔案」中顯示（QLThumbnailGenerator 縮圖） | ⬜ | 預計 ⚠️：Finder → 檔案 App |
 | 退出 | 選單「退出格式轮盘」 | iOS 不提供退出 | ⬜ | 預計 ⚠️：平台慣例 |
 | 選單列圖示 | Icons.menuBar | 無選單列；圖示用於 App 內 | ⬜ | 預計 ⚠️ |
 | App 圖示（程式繪製） | Icons.app、build.sh --icon | scripts/render-icon（同一套繪圖碼） | ⬜ | P6 |
-| 輸出位置：原檔旁、不可寫則到「下載」 | Out.dir | Documents/FormatWheel/；可選資料夾（bookmark）；可自動存相簿；每次可分享 | ⬜ | 預計 ⚠️ |
-| 輸出命名與衝突處理（「 2」「 3」、後綴、資料夾） | Out.url/unique/folder | 同（沿用） | ⬜ |  |
-| 多檔：依多數類型、跳過其他、「另有 n 个会跳过」 | Catalog.context、Engine.run | 同 | ⬜ |  |
-| 「当前」格式槽位停用 | Catalog.format（current） | 同 | ⬜ |  |
-| 「未装备」槽位 | Shell.has + installHint（brew install …） | 依裝置能力（HEIC/AVIF 編碼器、FFmpeg）；提示文字改成裝置說明 | ⬜ | 預計 ⚠️：文案 |
-| 隱私掃描最多 24 檔、「n 个文件留有痕迹」 | Privacy.scan | 同 | ⬜ |  |
-| 日誌檔 | Log（~/Library/Logs/FormatWheel.log，512 KB 輪替） | App 容器 Library/Logs；開發者選單匯出 | ⬜ | 預計 ⚠️ |
+| 輸出位置：原檔旁、不可寫則到「下載」 | Out.dir | Documents/FormatWheel/；可選資料夾（bookmark）；可自動存相簿；每次可分享 | 🟨 | 預設 Documents/FormatWheel 已完成（Out.directory 可由 App 替換）；自選資料夾與存相簿 P4 |
+| 輸出命名與衝突處理（「 2」「 3」、後綴、資料夾） | Out.url/unique/folder | 同（沿用） | ✅ | ImageOpsTests.testOutputNamesNeverOverwrite 等 |
+| 多檔：依多數類型、跳過其他、「另有 n 个会跳过」 | Catalog.context、Engine.run | 同 | ✅ | EngineTests；上游同票數時取決於 Dictionary 順序（不固定），移植版固定依類型順序決定 |
+| 「当前」格式槽位停用 | Catalog.format（current） | 同 | ✅ | CatalogParityTests |
+| 「未装备」槽位 | Shell.has + installHint（brew install …） | 依裝置能力（HEIC/AVIF 編碼器、FFmpeg）；提示文字改成裝置說明 | ✅ | 依裝置能力（HEIC 編碼器、AVIF 編碼器或 FFmpeg、FFmpeg）；提示改成說明原因並有 zh-Hans／zh-Hant／en（例：「此设备不支持 HEIC 编码」）；CatalogParityTests 驗證狀態與上游一致 |
+| 隱私掃描最多 24 檔、「n 个文件留有痕迹」 | Privacy.scan | 同 | 🟨 | 圖片與 PDF 完成（EngineTests）；影片 P2、Word P3 |
+| 日誌檔 | Log（~/Library/Logs/FormatWheel.log，512 KB 輪替） | App 容器 Library/Logs；開發者選單匯出 | 🟨 | 寫到 App 容器 Library/Logs/FormatWheel.log；匯出功能 P4 |
 | 字型：Avenir Next Condensed、PingFang、HelveticaNeue-CondensedBlack、Impact | Fonts | iOS 內建前三者（加 PingFang TC）；Impact 以替代字型近似 | ⬜ | 預計 ⚠️：Impact |
 | 宣傳片渲染（Promo/） | Promo/*.swift、render.sh | 不移植（行銷工具，非 App 功能）；P4 用 simctl 錄操作示範 | ⬜ | 預計 ⚠️ |
 | 網站（docs/index.html） | GitHub Pages 介紹頁 | site/altstore 來源＋README | ⬜ | 預計 ⚠️ |
 | VoiceOver 清單模式 | （上游沒有） | VoiceOver 開啟時改用可點選清單 | ⬜ | iOS 新增 |
 | 觸覺回饋 | （上游沒有） | UISelectionFeedbackGenerator | ⬜ | iOS 新增 |
+| Catalog 對等性檢查 | — | scripts/catalog-parity/dump-upstream.sh 把上游 Catalog.swift 原檔編譯成 macOS 工具輸出 156 個情境，CatalogParityTests 逐槽比對 ID、順序、big、symbol、ammo、title、detail、enabled、note、stats、traits、requires；例外只有 img.to.webp／img.to.heic／img.to.avif 的 requires 與「未装备」提示文字 | ✅ | 每個階段都要通過 |
 
 ## 3. 命令列旗標（13）
 
@@ -162,7 +163,8 @@
 
 ## 4. ⚠️ 差異總表
 
-（尚無已完成的 ⚠️ 項目；「預計 ⚠️」標在各列備註。）
+- **pdf.mono**：見第 5 節「pdf.mono」：灰階點陣化＋隱形文字層；旋轉、所有註解（連結、螢光筆＋彈出備註、表單欄位）、書籤、具名目的地都保留
+- **gen.path**：複製「檔案」App 中的位置（「我的 iPhone › 格式轮盘 › …」「iCloud 云盘 › …」），其他位置複製 file URL；iOS 沙盒路徑對使用者沒有意義
 
 ## 5. 替代方案說明
 
@@ -201,3 +203,9 @@ x264 是 GPL，不能內建，上游所有 `-c:v libx264 … -crf N` 都改用 `
 | 連結、註解、表單、書籤 | 保留 | 不保留 |
 
 測試：每頁抽樣像素 R=G=B、頁數與原檔相同、頁面尺寸與旋轉相同、PDFKit 能抽出文字（有文字層的來源與掃描來源各一）。
+
+### iOS PDFKit 的已知問題與對策
+
+- `PDFDocument.write(withOptions:)` 的 `saveImagesAsJPEGOption`／`optimizeImagesForScreenOption` 在 iOS 上沒有作用（輸出與原檔相同大小）→ pdf.compress 改用 `PDFWriter.recompress`。
+- PDFKit 寫出「在記憶體中新建、指向頁面」的連結目的地時，會寫成無效的名稱（`/##3`），讀回後連結失效；讀進來的既有連結重新存檔則正常 → pdf.mono 不用 PDFKit 存檔，改由 `PDFWriter.assemble` 直接複製原檔物件並重新指向新頁面。
+- `PDFAnnotation.copy()` 寫進另一份文件時會遺失 /Subtype 與動作 → 不使用。

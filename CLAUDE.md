@@ -88,6 +88,14 @@ ImageIO, PDFKit, CoreImage, AVFoundation, CryptoKit, UTType port directly. Keep 
   verbatim as possible.
 - Upstream's action list is `Catalog.allIDs` — **73 IDs** at the pinned commit (the brief said 75;
   the user confirmed 73).
+- **Catalog parity gate (every phase):** `Tests/CoreTests/CatalogParityTests` compares the port with upstream's
+  own `Catalog.swift`, compiled unmodified by `scripts/catalog-parity/dump-upstream.sh` (run by
+  `scripts/test.sh`). The only allowed differences are listed in `CatalogParityTests.Exceptions`
+  (iOS capability checks replacing Homebrew tools, and the 「未装备」 reason text). Never weaken it.
+- Localised strings in FormatWheelCore go through `L("<upstream zh-Hans text>")`; run
+  `python3 scripts/gen-strings.py` after adding any, and translate 「未装备」 reasons into zh-Hant/en at once.
+- iOS PDFKit pitfalls (see PARITY §5): write options are ignored, page links created in memory are written
+  broken, `PDFAnnotation.copy()` loses data. Use `PDFWriter` when a PDF must keep links.
 - Each action has at least one test. Fixtures are generated in code (`Tests/CoreTests/Fixtures.swift`):
   JPEG with GPS + device-model EXIF, multi-page PDF with an author, 1 s sine audio, 2 s colour-block video with
   an audio track via AVAssetWriter, generated docx. No large binaries in the repo.
@@ -95,6 +103,8 @@ ImageIO, PDFKit, CoreImage, AVFoundation, CryptoKit, UTType port directly. Keep 
   `feat(core): port pdf.split`) → push.
 - Hardware-dependent tests (VideoToolbox encoders on the simulator): detect the capability first; if it is
   missing, `throw XCTSkip("<reason>")`. This is the only allowed kind of skip (user-approved 2026-11-17).
+  `img.cutout` (Vision foreground mask can't create an inference context on the simulator) uses the same
+  pattern — awaiting the user's confirmation since P1.
 - CI failures: read with `gh run watch` / `gh run view --log-failed`, fix the root cause. **Never disable or
   skip tests.**
 - Stop and ask the user for trade-offs: licensing, clearly degraded replacements, paid services.

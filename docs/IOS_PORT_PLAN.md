@@ -133,8 +133,9 @@ Swift + AppKit，20 個 Swift 檔、約 6,200 行，`Catalog.allIDs` 共 **73 �
 | R4 | 免費 Apple ID 側載：7 天重簽、3 個 App、每週 10 個 App ID | 使用者麻煩 | Share Extension 預設不包含（會多佔 App ID）；README 說明 |
 | R5 | iOS 沒有 textutil，Word/ODT 讀寫要自己做 | 文件轉換保真度下降 | 自寫 Docx/ODT（段落、標題、粗斜體底線、清單、超連結、表格、內嵌圖片）；來回轉換測試；.doc 寫出標 ⚠️ |
 | R6 | `pdf.mono` 依賴 macOS QuartzFilter（向量灰階） | iOS 無等效 API | **已決定**：灰階點陣化（預設 200 dpi）＋隱形文字層（原文字優先，否則 OCR），逐頁串流；檔案可能變大；PARITY 標 ⚠️ |
-| R7 | Vision 前景遮罩在模擬器上可能不可用 | img.cutout 測試 | 測試以有清楚主體的合成圖驗證；若模擬器缺能力，改用實機或以 API 能力檢查決定預期結果（不跳過測試） |
+| R7 | Vision 前景遮罩在模擬器上不可用（只有 simulator GPU，「Could not create inference context」） | img.cutout 測試 | 已確認。App 改顯示「这台设备跑不了抠图模型」；測試偵測到這個錯誤時 XCTSkip 並寫明原因（同 VideoToolbox 規則，待使用者確認），需實機驗證 |
 | R8 | Extension 記憶體上限約 120 MB | Share Extension 轉檔會被殺 | Extension 只透過 App Group 轉交檔案，不在 extension 內轉檔 |
 | R9 | 背景執行時間有限 | 長影片轉檔被中止 | `beginBackgroundTask`；iOS 26+ `BGContinuedProcessingTask`；中止時清除半成品並顯示 WASTED |
 | R10 | GitHub macOS runner 映像與 Xcode 版本變動 | CI 突然壞掉 | `setup-xcode latest-stable`；模擬器動態挑選（`scripts/test.sh`） |
+| R12 | iOS PDFKit：寫出選項無效、記憶體中新建的頁面連結會寫壞、`PDFAnnotation.copy()` 遺失資料 | pdf.compress／pdf.mono 結果錯誤 | 自寫 `PDFWriter`（CGPDF 物件逐一序列化）處理圖片重壓與頁面組裝 |
 | R11 | 任務說明寫 75 個動作，上游 `Catalog.allIDs` 實際 73 個 | 範圍認知不一致 | **已確認**：以 73 為準 |
