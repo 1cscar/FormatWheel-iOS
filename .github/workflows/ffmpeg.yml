@@ -52,7 +52,7 @@ jobs:
           } > out/NOTES.md
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ffmpeg-xcframeworks
           path: out/

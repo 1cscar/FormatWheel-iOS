@@ -42,7 +42,7 @@ jobs:
 
       - name: Upload test results
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: test-results
           path: build/TestResults-*.xcresult
@@ -52,7 +52,7 @@ jobs:
         run: scripts/build-unsigned.sh
 
       - name: Upload IPA
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: FormatWheel-ipa
           path: |
