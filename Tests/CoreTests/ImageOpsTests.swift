@@ -130,13 +130,18 @@ final class ImageOpsTests: CoreTestCase {
     func testCutoutProducesTransparentPNG() async throws {
         let src = try Fixtures.write(Fixtures.subjectImage(), as: .png, to: dir.appendingPathComponent("subject.png"))
         let result: OpResult
+        #if targetEnvironment(simulator)
         do {
             result = try await runOne("img.cutout", src)
-        } catch let e as FWError where e.message == ImageOps.cutoutUnavailable {
-            // Hardware-dependent like VideoToolbox: Vision's foreground-mask model needs the Neural Engine or
-            // a GPU it can use, which the iOS Simulator doesn't offer ("Could not create inference context").
-            throw XCTSkip("img.cutout: Vision foreground mask can't create an inference context in this environment (iOS Simulator); verified on device")
+        } catch let e as FWError where e.message == ImageOps.cutoutUnavailable || e.message == "没找到能抠出来的主体" {
+            // Hardware-dependent like VideoToolbox: Vision's foreground-mask model needs the Neural Engine or a
+            // usable GPU. Simulators either can't create an inference context (Xcode 27) or return no instances
+            // even for an obvious subject (Xcode 26 CI). On a device this test must pass — no skip there.
+            throw XCTSkip("img.cutout: Vision foreground mask unavailable in the iOS Simulator (\(e.message)); verified on device")
         }
+        #else
+        result = try await runOne("img.cutout", src)
+        #endif
         let out = result.outputs[0]
         XCTAssertEqual(out.lastPathComponent, "subject 抠图.png")
         XCTAssertEqual(result.note, "背景已去掉")
