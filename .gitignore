@@ -1,0 +1,23 @@
+# Xcode / XcodeGen
+*.xcodeproj
+*.xcworkspace
+!Packages/**/.swiftpm/xcode/package.xcworkspace
+xcuserdata/
+DerivedData/
+build/
+*.ipa
+*.tipa
+dist/
+
+# SwiftPM
+.build/
+Packages/*/.build/
+Packages/*/.swiftpm/
+Package.resolved
+
+# Prebuilt FFmpeg / libwebp (fetched by scripts/fetch-ffmpeg.sh)
+Vendor/FFmpeg/
+
+# macOS
+.DS_Store
+*.log

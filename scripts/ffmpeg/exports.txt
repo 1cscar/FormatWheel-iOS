@@ -1,0 +1,9 @@
+_fw_ffmpeg_execute
+_fw_ffmpeg_cancel
+_fw_probe
+_fw_ffmpeg_version
+_fw_component_versions
+_fw_ffmpeg_configuration
+_fw_ffmpeg_license
+_fw_has_encoder
+_fw_has_filter

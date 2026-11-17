@@ -1,0 +1,74 @@
+name: FFmpeg xcframeworks
+
+# Builds FFmpeg + codecs from source (scripts/build-ffmpeg.sh) and publishes them as the
+# GitHub Release "ffmpeg-v<FFMPEG_VERSION>", which CI downloads with scripts/fetch-ffmpeg.sh.
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish to the ffmpeg-v<version> release (replaces existing assets)
+        type: boolean
+        default: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Select latest stable Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Install build tools
+        run: brew install cmake pkgconf nasm
+
+      - name: Build FFmpeg (iphoneos arm64, iphonesimulator arm64 + x86_64)
+        run: scripts/build-ffmpeg.sh
+
+      - name: Pack
+        run: |
+          source scripts/ffmpeg-versions.env
+          mkdir -p out
+          ditto -c -k --keepParent Vendor/FFmpeg/FWFFmpeg.xcframework out/FWFFmpeg.xcframework.zip
+          ditto -c -k --keepParent Vendor/FFmpeg/WebP.xcframework out/WebP.xcframework.zip
+          (cd out && shasum -a 256 *.zip > SHA256SUMS)
+          cat out/SHA256SUMS
+          {
+            echo "Prebuilt FFmpeg $FFMPEG_VERSION for FormatWheel iOS (iphoneos arm64, iphonesimulator arm64/x86_64, iOS $IOS_MIN+)."
+            echo
+            echo "- FWFFmpeg.xcframework: dynamic framework, FFmpeg $FFMPEG_VERSION (LGPL-2.1-or-later, no --enable-gpl / --enable-nonfree)"
+            echo "  with LAME $LAME_VERSION (LGPL), Opus $OPUS_VERSION (BSD), libvpx $LIBVPX_VERSION (BSD), SVT-AV1 $SVTAV1_VERSION (BSD-3-Clause-Clear + AOM patent license), libwebp $LIBWEBP_VERSION (BSD)."
+            echo "- WebP.xcframework: static libwebp $LIBWEBP_VERSION (BSD)."
+            echo
+            echo "Built by \`scripts/build-ffmpeg.sh\` at commit $GITHUB_SHA from the official source tarballs:"
+            echo "https://ffmpeg.org/releases/ffmpeg-$FFMPEG_VERSION.tar.xz and the URLs in the script."
+            echo "To rebuild or replace FFmpeg (LGPL §6), run that script and drop the result into Vendor/FFmpeg/."
+          } > out/NOTES.md
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ffmpeg-xcframeworks
+          path: out/
+          retention-days: 7
+
+      - name: Publish release
+        if: ${{ inputs.publish }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          source scripts/ffmpeg-versions.env
+          if gh release view "$FFMPEG_TAG" >/dev/null 2>&1; then
+            gh release upload "$FFMPEG_TAG" out/FWFFmpeg.xcframework.zip out/WebP.xcframework.zip out/SHA256SUMS --clobber
+            gh release edit "$FFMPEG_TAG" --notes-file out/NOTES.md
+          else
+            gh release create "$FFMPEG_TAG" out/FWFFmpeg.xcframework.zip out/WebP.xcframework.zip out/SHA256SUMS \
+              --target "$GITHUB_SHA" --title "FFmpeg $FFMPEG_VERSION (prebuilt for iOS)" --notes-file out/NOTES.md \
+              --prerelease --latest=false
+          fi
